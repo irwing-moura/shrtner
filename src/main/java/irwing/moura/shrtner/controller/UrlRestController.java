@@ -1,6 +1,7 @@
 package irwing.moura.shrtner.controller;
 
-import irwing.moura.shrtner.exception.UrlException;
+import irwing.moura.shrtner.exception.ExpiredUrlException;
+import irwing.moura.shrtner.exception.InvalidUrlException;
 import irwing.moura.shrtner.model.Url;
 import irwing.moura.shrtner.request.UrlRequest;
 import irwing.moura.shrtner.response.UrlResponse;
@@ -23,10 +24,9 @@ public class UrlRestController {
     private UrlService urlService;
 
     @PostMapping("/generate")
-    public ResponseEntity<UrlResponse> generateShortLink(@RequestBody UrlRequest request) throws UrlException {
+    public ResponseEntity<UrlResponse> generateShortLink(@RequestBody UrlRequest request) throws Exception {
 
         Url urlToRet = urlService.generateShortLink(request);
-
         if(urlToRet != null) {
             UrlResponse response = new UrlResponse();
             response.setOriginalUrl(urlToRet.getOriginalLink());
@@ -35,27 +35,26 @@ public class UrlRestController {
 
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
-        throw new UrlException("Error");
+        throw new Exception("Something happened and we couldn't generate your url");
     }
 
     @GetMapping("/{shortLink}")
-    public ResponseEntity<?> redirectToOriginalUrl(@PathVariable String shortLink, HttpServletResponse response) throws UrlException, IOException {
+    public ResponseEntity<?> redirectToOriginalUrl(@PathVariable String shortLink, HttpServletResponse response) throws ExpiredUrlException, IOException {
 
         if(StringUtils.isEmpty(shortLink)) {
-            throw new UrlException("Invalid Url");
+            throw new InvalidUrlException();
         }
 
         Url urlToRet = urlService.getEncodedUrl(shortLink);
 
         if(urlToRet== null) {
-            throw new UrlException("Url does not exist or it might have expired");
+            throw new ExpiredUrlException();
         }
 
         if(urlToRet.getExpirationDate().isBefore(LocalDateTime.now())) {
             urlService.deleteShortLink(urlToRet);
-            throw new UrlException("Url does not exist or it might have expired");
+            throw new ExpiredUrlException();
         }
-
 
         response.sendRedirect(urlToRet.getOriginalLink());
         return null;

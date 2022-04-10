@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt_BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>shrtner</title>
+    <link href="/css/index.css" rel="stylesheet"/>
+    <link rel="icon" type="image/x-icon" href="/images/logo32.png">
+    <script
+            src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
+
+</head>
+<body>
+<section class="layout">
+
+    <div class="container__search">
+        <h1>shrtner <img class="logo" src="/images/logo_128.png"/> </h1>
+        <form id="form">
+            <input autocomplete="off" placeholder="insert your url here" type="text" name="url" id="url" required/>
+            <button id="go" type="button">go</button>
+        </form>
+    </div>
+
+    <div  class="container__response">
+        <h1 id="response"></h1>
+        <div class="popover__content">
+            <p>Copied</p>
+        </div>
+    </div>
+
+
+<!--    <div id="loading" class="spinner"></div>-->
+
+</section>
+
+<div class="footer__copyright">
+    <small>Copyright © 2022 by Irwing Moura. All rights reserved.</small>
+</div>
+
+
+</body>
+</html>
+
+<script type="application/javascript">
+
+    $( document ).ready( function (){
+
+        $('#go').prop('disabled', true);
+
+        $('#url').on('input change', function() {
+            if($(this).val() != '' && isValidUrl($(this).val())) {
+                $('#go').prop('disabled', false);
+            } else {
+                $('#go').prop('disabled', true);
+            }
+        });
+
+    });
+
+
+
+    let popover = $('.popover__content');
+
+    $('#go').click( function () {
+
+        popover.hide();
+
+        let url = $('#url').val();
+
+        let request =  {
+            'url': encodeURI(url),
+            'expirationDate': null
+        }
+
+
+        $.post({
+            url: "http://localhost:8080/api/generate",
+            data: JSON.stringify(request),
+            contentType: "application/json; charset=utf-8",
+            beforeSend: (jqXHR, setting) => {
+                // $('#loading').show();
+            },
+            success: function( result ) {
+                console.log(result);
+                $('#response').text("http://localhost:8080/api/" + result.shortLink);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert('erro');
+            }
+        }).done(function(data){
+            // $('#loading').hide();
+            $('.container__response').show();
+        });
+    });
+
+
+
+    $('#response').click( function() {
+
+        let resp = $('#response').text();
+        navigator.clipboard.writeText(resp);
+
+        popover.css('top', '120px');
+        popover.css('opacity', 0);
+        popover.css('z-index', 10);
+        popover.css('visibility', 'visible');
+        popover.show().animate({
+            opacity: 1,
+            top: '81px'
+        }, 500);
+    });
+
+    // const target = document.querySelector('form input');
+    //
+    // target.addEventListener('focus', (event) => {
+    //     navigator.clipboard.readText()
+    //         .then(text => {
+    //             if(text.startsWith('http') && isValidUrl(text)) {
+    //                     target.value = text;
+    //             }
+    //         })
+    //         .catch(err => {
+    //             console.error('Failed to read clipboard contents: ', err);
+    //         });
+    // });
+
+    function isValidUrl(_string){
+        const matchPattern = /^(?:\w+:)?\/\/([^\s\.]+\.\S{2}|localhost[\:?\d]*)\S*$/;
+        return matchPattern.test(_string);
+    }
+
+
+
+
+</script>
