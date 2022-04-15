@@ -109,6 +109,16 @@ form {
   gap: 1rem;
 }
 
+a {
+  color: var(--color-primary);
+  transition: var(--transition);
+}
+
+a:hover {
+  color: var(--color-dark);
+}
+
+
 button {
   background: var(--color-primary);
   border: 1px solid var(--color-primary);
@@ -135,6 +145,9 @@ button[disabled]{
 }
 
 .footer__copyright {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   margin-top:auto;
 }
 

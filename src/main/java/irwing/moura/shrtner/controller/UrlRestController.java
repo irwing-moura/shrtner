@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.LocalDateTime;
 
-@RestController()
+
+@RestController
 @RequestMapping("/api")
 public class UrlRestController {
 
@@ -39,7 +39,7 @@ public class UrlRestController {
     }
 
     @GetMapping("/{shortLink}")
-    public ResponseEntity<?> redirectToOriginalUrl(@PathVariable String shortLink, HttpServletResponse response) throws ExpiredUrlException, IOException {
+    public void redirectToOriginalUrl(@PathVariable String shortLink, HttpServletResponse response) throws ExpiredUrlException, IOException {
 
         if(StringUtils.isEmpty(shortLink)) {
             throw new InvalidUrlException();
@@ -51,13 +51,8 @@ public class UrlRestController {
             throw new ExpiredUrlException();
         }
 
-        if(urlToRet.getExpirationDate().isBefore(LocalDateTime.now())) {
-            urlService.deleteShortLink(urlToRet);
-            throw new ExpiredUrlException();
-        }
-
+        urlService.linkAcessed(urlToRet);
         response.sendRedirect(urlToRet.getOriginalLink());
-        return null;
     }
 
 }

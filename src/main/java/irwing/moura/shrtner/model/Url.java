@@ -26,5 +26,6 @@ public class Url {
     private String shortLink;
     private LocalDateTime creationDate;
     private LocalDateTime expirationDate;
+    private LocalDateTime lastTimeCalled;
 
 }
